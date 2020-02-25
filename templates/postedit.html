@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit "{{post.title}}"{% endblock %}
+
+{% block content %}
+<h2>Edit Post</h2>
+<form method="POST">
+    <label for="title">Title : </label>
+    <input type="text" id="title" name="title" required value={{post.title}}>
+    <br>
+    <label for="content">Content : </label>
+    <input type="text" id="content" name="content" required value={{post.content}}>
+    <br>
+    <a href="/posts/{{post.id}}">Cancel</a>
+    <button>Edit</button>
+</form>
+{% endblock %}

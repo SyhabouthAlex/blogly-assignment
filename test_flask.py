@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from app import app
-from models import db, User
+from models import db, User, Post
 
 # Use test database and don't clutter tests with SQL
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly_test'
@@ -9,9 +9,6 @@ app.config['SQLALCHEMY_ECHO'] = False
 
 # Make Flask errors be real errors, rather than HTML pages with error info
 app.config['TESTING'] = True
-
-# This is a bit of hack, but don't use Flask DebugToolbar
-app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 
 db.drop_all()
 db.create_all()
@@ -27,8 +24,12 @@ class UserViewsTestCase(TestCase):
         user = User(first_name="Test", last_name="User")
         db.session.add(user)
         db.session.commit()
+        post = Post(title="abcd", content="bcdf", author_id=user.id)
+        db.session.add(post)
+        db.session.commit()
 
         self.user_id = user.id
+        self.post_id = post.id
 
     def tearDown(self):
         """Clean up any fouled transaction."""
@@ -59,11 +60,36 @@ class UserViewsTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn("Test2 User2", html)
-
-    def test_delete_user(self):
+            
+    def test_list_posts(self):
         with app.test_client() as client:
-            resp = client.post(f"/users/{self.user_id}/delete", follow_redirects=True)
+            resp = client.get(f"/users/{self.user_id}")
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertNotIn("Test User", html)
+            self.assertIn('abcd', html)
+
+    def test_add_posts(self):
+        with app.test_client() as client:
+            d = {"title": "Test2", "content": "Post2"}
+            resp = client.post(f"/users/{self.user_id}/posts/new", data=d, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Test2", html)
+
+    def test_post_details(self):
+        with app.test_client() as client:
+            resp = client.get(f"/posts/{self.post_id}")
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('bcdf', html)
+
+    def test_delete_posts(self):
+        with app.test_client() as client:
+            resp = client.post(f"/posts/{self.post_id}/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn("abcd", html)
