@@ -10,7 +10,13 @@
     <br>
     <label for="content">Content : </label>
     <input id="content" name="content" type="text" required>
-    <a href="users/{{user.id}}">Back</a>
+    <br>
+    {% for tag in tags %}
+    <input type="checkbox" id={{tag.name}} name=tags value={{tag.name}}>
+    <label for={{tag.name}}>{{tag.name}}</label>
+    <br>
+    {% endfor %}
+    <a href="/users/{{user.id}}">Back</a>
     <button>Add</button>
 </form>
 {% endblock %}

@@ -6,6 +6,12 @@
 <h1>{{post.title}}</h1>
 <p>{{post.content}}</p>
 <p>By <i>{{post.author.first_name}} {{post.author.last_name}}</i></p>
+<p>
+    <b>Tags: </b>
+    {% for tag in tags %}
+    <span>{{tag.name}} </span>
+    {% endfor %}
+</p>
 <form action="/users/{{post.author_id}}">
     <button>Back</button>
 </form>
